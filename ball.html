@@ -1,0 +1,137 @@
+<html>
+<body></body>
+<script type="text/javascript">
+  // Container Class
+  function Container(width, height, text, fontSize, color, top, left, border){
+    this.e = document.createElement('div');
+    this.e.textContent = text || 'Press Any Key!';
+    this.e.style.fontSize = fontSize || '10vh';
+    this.e.style.fontWeight = 'bold';
+    this.e.style.color = color || 'white'; 
+    this.e.style.position = 'absolute';
+    this.e.style.width = width + 'px';
+    this.e.style.height = height + 'px';
+    this.e.style.top = (top || 10) + 'vh';
+    this.e.style.left = (left || 10) + 'vw';
+    this.e.style.textAlign = 'center';
+    this.e.style.border = border || 'solid';
+  }
+
+  // Instance
+  Container.prototype.getBounds = function() {
+      return {
+        width: parseInt(this.e.style.width),
+        height: parseInt(this.e.style.height)
+      }
+  };
+
+  Container.prototype.append = function(ballObj) {
+    Ball.list.push(ballObj);
+    this.e.append(ballObj.b);
+  };
+
+  Container.prototype.render = function() {
+    document.body.append(this.e);
+  };
+
+  Container.prototype.start = function() {
+    onkeydown = function(e){
+    if(intervalIds.length > 0){
+        intervalIds.forEach((item) => clearInterval(item));
+        intervalIds = [];
+        //intervalIds.splice(0, intervalIds.length);
+      }else{
+        Ball.setAll();
+      }
+    }
+  };
+ 
+
+  // Ball Class
+	function Ball(container, x, y, vx, vy){
+    this.container = container;
+    var bounds = container.getBounds();
+
+		this.b = document.createElement('div');
+		this.b.style.height = '15px';
+		this.b.style.width = '15px';
+		this.b.style.borderRadius = "50%";
+		this.b.style.position = "absolute";
+    this.x = x || randomN(bounds.width);
+    this.y = y || randomN(bounds.height);
+    this.b.style.left = this.x + 'px';
+		this.b.style.top = this.y + 'px';
+    this.xSpeed = vx || randomN(16) - 8;
+    this.ySpeed = vy || randomN(16) - 8;
+		this.b.style.backgroundColor = setRandomColor();
+    container.append(this);
+
+    this.oriXSpeed = this.xSpeed
+    this.oriYSpeed = this.ySpeed
+	}
+
+  // Static
+  Ball.list = [];
+  
+  var intervalIds = [];
+  Ball.setAll = function(){
+    container.render();
+    Ball.list.forEach((ball) => {
+      intervalIds.push(
+        setInterval(() => {
+          ball.setColor();
+          ball.move();
+        }, 100)
+      )
+    })
+  }
+
+  // Instance
+  Ball.prototype.setColor = function(){
+    this.b.style.backgroundColor = setRandomColor();
+  }
+
+  Ball.prototype.move = function(){
+    var bounds = this.container.getBounds();
+    this.xSpeed *= 1.08;
+    this.ySpeed *= 1.08;
+    this.x += this.xSpeed;
+    this.y += this.ySpeed;
+    if(this.x >= bounds.width){
+      this.x = bounds.width;
+      this.xSpeed = this.oriXSpeed > 0 ? -this.oriXSpeed : this.oriXSpeed;
+    }else if(this.x <= 0){
+      this.x = 0;
+      this.xSpeed = this.oriXSpeed > 0 ? this.oriXSpeed : -this.oriXSpeed;
+    }
+    if(this.y >= bounds.height){
+      this.y = bounds.height;
+      this.ySpeed = this.oriYSpeed > 0 ? -this.oriYSpeed : this.oriYSpeed;
+    }else if(this.y <= 0){
+      this.y = 0;
+      this.ySpeed = this.oriYSpeed > 0 ? this.oriYSpeed : -this.oriYSpeed;
+    }
+    
+    this.b.style.left = this.x + 'px';
+    this.b.style.top = this.y + 'px';
+  }
+
+  // Utility function
+  function randomN(n){
+    return Math.floor(Math.random() * n);
+  }
+  function setRandomColor(){
+    return `rgb(${randomN(256)}, ${randomN(256)}, ${randomN(256)})`;
+  }
+
+  // Call
+  var container = new Container(500, 500);
+  var balls = new Array(15);
+  for(var i=0; i<balls.length; i++){
+    balls[i] = new Ball(container);
+  }
+  document.body.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'
+  container.start();
+
+</script>
+</html>
